@@ -94,6 +94,14 @@ module OverlayConfig
     # go through all config files and return first value of name found in config files
     #
     # @param name [String] name of config file entry
+    # @return value
+    def [] name
+      get name
+    end
+
+    # go through all config files and return first value of name found in config files
+    #
+    # @param name [String] name of config file entry
     # @param default default value, if config setting isn't found
     # @return value
     def get name, default: nil
@@ -110,6 +118,42 @@ module OverlayConfig
       end
       value = default if value.nil? and not found
       value
+    end
+
+    # check, if one of the config files includes key *name*
+    #
+    # @param name [String,Symbol] key to check
+    def has_key? name
+      name_str = name.to_s
+      name_sym = name.to_sym
+
+      @config.each do |configfile|
+        if configfile[:config][name_str] or configfile[:config][name_sym]
+          return true
+        end
+      end
+      return false
+    end
+
+    # set config value in defaults hash
+    #
+    # @param name [String] name of config file entry
+    # @param value [Object] value of config file entry
+    def []= name, value
+      set name, value
+    end
+
+    # set config value in defaults hash
+    #
+    # @param name [String] name of config file entry
+    # @param value [Object] value of config file entry
+    def set name, value
+      unless @defaults.is_a? Hash
+        @defaults = {}
+        append('<defaults>', @defaults)
+      end
+
+      @defaults[name.to_sym] = value
     end
   end
 end

@@ -19,6 +19,7 @@ describe OverlayConfig do
 
     it "should load test config file" do
       expect(@config.get :test).to eq('Hello World!')
+      expect(@config[:test]).to eq('Hello World!')
     end
 
     it "should return default, if config could not be found in config files" do
@@ -89,6 +90,13 @@ describe OverlayConfig do
     it 'should insert config settings' do
       @config.insert(0, '<insert_test>', {'test' => 'inserted_config_value'})
       expect(@config.get :test).to eq('inserted_config_value')
+    end
+
+    it 'should set config values' do
+      @config[:set] = 'set'
+      expect(@config.get :set).to eq('set')
+      expect(@config.get 'set').to eq('set')
+      expect(@config.has_key? 'set').to be(true)
     end
   end
 

@@ -21,6 +21,7 @@ And then execute:
 ### application config with defaults
 
 ```ruby
+require 'bundler/setup'
 require 'overlay_config'
 
 @config = OverlayConfig::Config.new(
@@ -32,6 +33,14 @@ require 'overlay_config'
 
 # search for 'entry' and :entry in config files and return the first value found
 @config.get(:entry)
+@config[:entry]
+
+# set config in defaults hash
+@config[:default_b] = 'This is default b'
+
+# check, if config has a specific key
+@config.has_key? :default_a
+=> true
 
 # search for 'doesntexist' and :doesntexist in config files and return default, if not found
 @config.get(:doesntexist, default: 'default value')
@@ -49,6 +58,7 @@ and parses all files, which are found.
 ### application config with alternative config files and directories
 
 ```ruby
+require 'bundler/setup'
 require 'overlay_config'
 
 @config = OverlayConfig::Config.new(
@@ -66,6 +76,7 @@ Will look for following config files in this order:
 ### application config with alternative config file extensions
 
 ```ruby
+require 'bundler/setup'
 require 'overlay_config'
 
 @config = OverlayConfig::Config.new(
@@ -85,6 +96,7 @@ Alternatively you can set the parser to :json, if config file is in JSON format.
 ### Log missing or unsupported config files to Logger object
 
 ```ruby
+require 'bundler/setup'
 require 'overlay_config'
 
 log = Logger.new $stdout
@@ -98,6 +110,7 @@ log.level = Logger::INFO
 ### Add external loaded configuration to config object
 
 ```ruby
+require 'bundler/setup'
 require 'overlay_config'
 
 @config = OverlayConfig::Config.new(defaults: {
@@ -118,6 +131,7 @@ require 'overlay_config'
 ### Hash extension
 
 ```ruby
+require 'bundler/setup'
 require 'overlay_config'
 
 @hash = {
