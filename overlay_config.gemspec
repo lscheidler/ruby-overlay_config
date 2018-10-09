@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{Application config with overlay functionality.}
   spec.description   = %q{Application config with overlay functionality.}
   spec.homepage      = "https://github.com/lscheidler/ruby-overlay_config"
-  spec.license       = "MIT"
+  spec.license       = "Apache-2.0"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
