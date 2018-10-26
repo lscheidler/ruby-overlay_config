@@ -1,3 +1,9 @@
+0.1.3 (2018-10-26)
+==================
+
+- added support for glob config file names
+- added delete\_at, each, get\_filenames and clone methods
+
 0.1.2 (2018-10-09)
 ==================
 

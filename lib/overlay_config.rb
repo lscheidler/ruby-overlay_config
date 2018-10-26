@@ -56,22 +56,34 @@ module OverlayConfig
     def load_config_files
       @config = []
       @config_base_directories.each do |base_directory|
-        base_directory = base_directory + '/' unless base_directory.end_with? '/'
-
         @config_filenames.each do |config_filename|
-          file = base_directory + @config_scope + '/' + config_filename
-          if file and File.exist?(f = File.expand_path(file))
-            if f.end_with? '.yml' or f.end_with? '.yaml' or @default_parser == :yaml
-              @config << ({file: f, config: YAML::load_file(f)})
-            elsif f.end_with? '.json' or @default_parser == :json
-              @config << ({file: f, config: JSON::parse(File.read(f))})
-            else
-              @log and @log.warn "ignoring #{file}, file extension not known."
+          file = File.expand_path(File.join(base_directory, @config_scope, config_filename))
+          if File.exist?(file)
+            load_config_file file
+          elsif not (files = Dir.glob(file).sort).empty?
+            files.each do |f|
+              load_config_file f
             end
           else
             @log and @log.debug "#{file} not found, ignoring it."
           end
         end
+      end
+    end
+
+    # load config file
+    #
+    # @param file [String] filename to load
+    # @note supports yaml and json formatted config files at the moment
+    # @raise [Psych::SyntaxError] if a config file is found with .yaml or .yml and incorrect yaml syntax
+    # @raise [JSON::ParserError] if a config file is found with .json and incorrect json syntax
+    def load_config_file file
+      if file.end_with? '.yml' or file.end_with? '.yaml' or @default_parser == :yaml
+        append file, YAML::load_file(file)
+      elsif file.end_with? '.json' or @default_parser == :json
+        append file, JSON::parse(File.read(file))
+      else
+        @log and @log.warn "ignoring #{file}, file extension not known."
       end
     end
 
@@ -96,6 +108,13 @@ module OverlayConfig
         file: filename,
         config: config
       })
+    end
+
+    # Deletes the config file at the specified index, returning that element, or nil if the index is out of range.
+    #
+    # @param index [Integer] index
+    def delete_at index
+      @config.delete_at index
     end
 
     # return length of config file array
@@ -168,6 +187,35 @@ module OverlayConfig
       end
 
       @defaults[name.to_sym] = value
+    end
+
+    # iterate over all available config files
+    #
+    # @yield [filename, config]
+    # @yieldparam filename [String] filename of config file
+    # @yieldparam config [Hash] content of config file
+    def each
+      @config.each do |configfile|
+        yield configfile[:file], configfile[:config]
+      end
+    end
+
+    # return loaded filenames
+    #
+    # @returns [Array] list of loaded configfiles
+    def get_filenames
+      @config.map do |configfile|
+        configfile[:file]
+      end
+    end
+
+    # clone OverlayConfig::Config object
+    def clone
+      copy = super
+      copy.instance_eval do
+        @config = @config.clone
+      end
+      copy
     end
 
     def method_missing method_name, *args, &block

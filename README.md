@@ -93,6 +93,23 @@ Will look for following config files in this order and parse it as YAML:
 
 Alternatively you can set the parser to :json, if config file is in JSON format.
 
+### application config with files matching glob pattern
+
+```ruby
+require 'bundler/setup'
+require 'overlay_config'
+
+@config = OverlayConfig::Config.new(
+  config_scope: 'my_application',
+  config_filenames: ['conf.d/*.yml'],
+)
+```
+
+Will look for following config files in this order and loads all configurations matching glob pattern:
+
+- $HOME/.config/my\_application/conf.d/\*.yml
+- /etc/my\_application/conf.d/\*.yml
+
 ### Log missing or unsupported config files to Logger object
 
 ```ruby
@@ -126,6 +143,44 @@ require 'overlay_config'
 @config.append('<filename>', {
   setting: 'value'
 })
+```
+
+### remove configuration from config object
+
+```ruby
+# delete config at position 0
+@config.delete_at(0)
+```
+
+### iterate over all loaded configurations
+
+```ruby
+@config.each do |filename, config|
+  #
+end
+```
+
+### return list of loaded config files
+
+```ruby
+@config.get_filenames
+=> ["$HOME/.config/my\_application/conf.d/\*.yml", "/etc/my\_application/conf.d/\*.yml"]
+```
+
+### Modifying overlay without changing main configuration
+
+This can be usefull to change configuration ordering temporary (e.g. adding a config as first layer) without changing main config (which is maybe used later)
+
+```ruby
+@cloned = @config.clone
+@cloned.insert(0, '<filename>', {
+  setting: 'value'
+})
+
+@config.get_filenames
+=> ["$HOME/.config/my\_application/conf.d/\*.yml", "/etc/my\_application/conf.d/\*.yml"]
+@cloned.get_filenames
+=> ["<filename>", "$HOME/.config/my\_application/conf.d/\*.yml", "/etc/my\_application/conf.d/\*.yml"]
 ```
 
 ### Hash extension

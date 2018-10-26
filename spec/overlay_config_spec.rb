@@ -31,6 +31,10 @@ describe OverlayConfig do
       )
     end
 
+    it "responds to get" do
+      expect(@config.respond_to? :get).to eq(true)
+    end
+
     it "should load test config file" do
       expect(@config.get :test).to eq('Hello World!')
       expect(@config[:test]).to eq('Hello World!')
@@ -50,6 +54,11 @@ describe OverlayConfig do
 
     it "should return test setting for config.test" do
       expect(@config.test).to eq('Hello World!')
+    end
+
+    it "responds to set" do
+      expect(@config.respond_to? :set).to eq(true)
+      expect(@config.respond_to? '[]='.to_sym).to eq(true)
     end
 
     it "should provide setter method for variables (e.g. config.abs = something)" do
@@ -105,9 +114,17 @@ describe OverlayConfig do
       }.to output(/config.json not found/).to_stdout
     end
 
+    it "responds to append" do
+      expect(@config.respond_to? :append).to eq(true)
+    end
+
     it 'should append config settings' do
       @config.append('<append_test>', {'appended' => 'appended_config_value'})
       expect(@config.get :appended).to eq('appended_config_value')
+    end
+
+    it "responds to insert" do
+      expect(@config.respond_to? :insert).to eq(true)
     end
 
     it 'should insert config settings' do
@@ -120,6 +137,88 @@ describe OverlayConfig do
       expect(@config.get :set).to eq('set')
       expect(@config.get 'set').to eq('set')
       expect(@config.has_key? 'set').to be(true)
+    end
+
+    it "responds to get_filenames" do
+      expect(@config.respond_to? :get_filenames).to eq(true)
+    end
+
+    it "returns get_filenames" do
+      expect(@config.get_filenames).to eq(["<insert_test>", Dir.pwd + "/spec/data/config.json", "<defaults>", "<append_test>"])
+    end
+
+    it "responds to delete_at" do
+      expect(@config.respond_to? :delete_at).to eq(true)
+    end
+
+    it 'deletes the config file at specified index' do
+      expect(@config.length).to be(4)
+      expect(@config.delete_at(0)).to eq({:file=>"<insert_test>", :config=>{"test"=>"inserted_config_value"}})
+      expect(@config.length).to be(3)
+    end
+
+    describe "clone" do
+      before(:all) do
+        @config = OverlayConfig::Config.new(
+          config_scope: 'data',
+          config_base_directories: [Dir.pwd + '/spec']
+        )
+        @cloned = @config.clone
+        @cloned.insert(0, '<insert_test>', {'test' => 'inserted_config_value'})
+      end
+
+      it "should load test config file" do
+        expect(@config.test).to eq('Hello World!')
+      end
+
+      it "return value from clone" do
+        expect(@cloned.test).to eq('inserted_config_value')
+      end
+
+      it "no additional configs in original" do
+        expect(@config.length).to be(1)
+        expect(@config.delete_at(0)).not_to eq({:file=>"<insert_test>", :config=>{"test"=>"inserted_config_value"}})
+
+        expect(@cloned.length).to be(2)
+        expect(@cloned.delete_at(0)).to eq({:file=>"<insert_test>", :config=>{"test"=>"inserted_config_value"}})
+      end
+    end
+
+    describe "support glob filenames" do
+      before(:all) do
+        @config = OverlayConfig::Config.new(
+          config_scope: 'data',
+          config_filenames: ['conf.d/*.yml'],
+          config_base_directories: [Dir.pwd + '/spec']
+        )
+      end
+
+      it 'loads all files matching glob' do
+        expect(@config.get :a).to eq('a')
+        expect(@config.get :b).to eq('b')
+        expect(@config.get :c).to eq('c')
+      end
+
+      it "responds to each" do
+        expect(@config.respond_to? :each).to eq(true)
+      end
+
+      it 'iterates over all configs' do
+        index = 0
+        @config.each do |filename, config|
+          case index
+          when 0
+            expect(filename).to end_with('data/conf.d/a.yml')
+          when 1
+            expect(filename).to end_with('data/conf.d/b.yml')
+          when 2
+            expect(filename).to end_with('data/conf.d/c.yml')
+          when 4
+            # should not exist
+          end
+          index += 1
+        end
+      end
     end
   end
 
