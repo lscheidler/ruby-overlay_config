@@ -160,6 +160,18 @@ require 'overlay_config'
 end
 ```
 
+### load a config file and at it to the end of the overlay
+
+```ruby
+@config.load_config_file "/etc/default/external.json"
+```
+
+### load a config file and at it to a specific position in the overlay
+
+```ruby
+@config.load_config_file_at 1, "/etc/default/external.json"
+```
+
 ### return list of loaded config files
 
 ```ruby

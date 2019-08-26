@@ -71,6 +71,23 @@ module OverlayConfig
       end
     end
 
+    # load config file and insert it at *index*
+    #
+    # @param index [Integer] index to insert config
+    # @param file [String] filename to load
+    # @note supports yaml and json formatted config files at the moment
+    # @raise [Psych::SyntaxError] if a config file is found with .yaml or .yml and incorrect yaml syntax
+    # @raise [JSON::ParserError] if a config file is found with .json and incorrect json syntax
+    def load_config_file_at index, file
+      if file.end_with? '.yml' or file.end_with? '.yaml' or @default_parser == :yaml
+        insert index, file, YAML::load_file(file)
+      elsif file.end_with? '.json' or @default_parser == :json
+        insert index, file, JSON::parse(File.read(file))
+      else
+        @log and @log.warn "ignoring #{file}, file extension not known."
+      end
+    end
+
     # load config file
     #
     # @param file [String] filename to load
